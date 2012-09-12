@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+from axiom import store
+import shutil
+import tempfile
+import time
+
+import axiombench
+
+
+def timed(f, *a, **kw):
+    start = time.time()
+    f(*a, **kw)
+    return time.time() - start
+
+
+def nop(store):
+    """
+    A no-op.
+    """
+
+
+n, batches = 10000, 5
+temporaryDirectory = tempfile.mkdtemp()
+inMemory, onDisk = store.Store(), store.Store()
+
+
+def runBenchmarks():
+    print "{} iterations per batch, batches of {}".format(n, batches)
+
+    for module in axiombench.benchmarkModules:
+        benchmark = module.benchmark
+        print "Running {0.__module__}:\n{0.__doc__}".format(benchmark)
+        for target, name in [(inMemory, "in-memory"), (onDisk, "on disk")]:
+            getattr(module, "prepare", nop)(target)
+            best = min(timed(benchmark, target, n) for _ in xrange(batches))
+            print "{}, best of {}: {}".format(name, batches, best)
+            print "(roughly {}/s)".format(n / best)
+
+
+try:
+    runBenchmarks()
+finally:
+    shutil.rmtree(temporaryDirectory)
