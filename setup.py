@@ -9,6 +9,7 @@ setup(name='axiombench',
       author_email='_@lvh.cc',
 
       packages=["axiombench", "axiombench.test"],
+      scripts=["bin/axiombench"],
 
       license='ISC',
       classifiers=[
